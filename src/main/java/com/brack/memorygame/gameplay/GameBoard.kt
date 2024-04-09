@@ -3,7 +3,7 @@ package com.brack.memorygame.gameplay
 import kotlinx.coroutines.*
 import kotlin.math.absoluteValue
 
-class GameSession {
+class GameBoard {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private val cells: MutableList<CellOwner> = MutableList(9) { CellOwner.NONE }
 

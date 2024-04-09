@@ -1,7 +1,7 @@
 package com.brack.memorygame.socket;
 
 import com.brack.memorygame.gameplay.CellOwner;
-import com.brack.memorygame.gameplay.GameSession;
+import com.brack.memorygame.gameplay.GameBoard;
 import com.brack.memorygame.socket.model.GameMessage;
 import com.brack.memorygame.socket.model.MessageType;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +22,8 @@ public class GameSocketHandler implements WebSocketHandler {
     private static final String START_MESSAGE =
             new GameMessage("Waiting...", MessageType.INFO).write();
 
-    private static final GameSession gameSession = new GameSession();
-    private static final Map<GameSession, List<WebSocketSession>> gameToSocket = new HashMap<>();
+    private static final GameBoard GAME_BOARD = new GameBoard();
+    private static final Map<GameBoard, List<WebSocketSession>> gameToSocket = new HashMap<>();
 
     @NotNull
     @Override
@@ -43,7 +43,7 @@ public class GameSocketHandler implements WebSocketHandler {
                 .or(() -> {
                     var sessions = new ArrayList<WebSocketSession>();
                     sessions.add(session);
-                    gameToSocket.put(new GameSession(), sessions);
+                    gameToSocket.put(new GameBoard(), sessions);
                     return java.util.Optional.of(List.of(session.send(Mono.just(session.textMessage(START_MESSAGE)))));
                 })
                 .map(Flux::concat).orElseThrow();
@@ -55,7 +55,7 @@ public class GameSocketHandler implements WebSocketHandler {
                 .filter(msg -> msg.getType() == MessageType.CLIENT_CLICK)
                 .map(msg -> {
                     int index = Integer.parseInt(msg.getText());
-                    gameSession.updateCell(index, CellOwner.PLAYER_A);
+                    GAME_BOARD.updateCell(index, CellOwner.PLAYER_A);
                     return new GameMessage(msg.getText(), MessageType.SHOW_FIGURE).write();
                 })
                 .map(session::textMessage)
