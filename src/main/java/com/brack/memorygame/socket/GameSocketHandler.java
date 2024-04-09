@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class MyWebSocketHandler implements WebSocketHandler {
+public class GameSocketHandler implements WebSocketHandler {
 
     private static final String START_MESSAGE =
             new GameMessage("Waiting...", MessageType.INFO).write();
