@@ -3,8 +3,12 @@ package com.brack.memorygame.socket;
 import com.brack.memorygame.gameplay.CellOwner;
 import com.brack.memorygame.gameplay.GameBoard;
 import com.brack.memorygame.socket.model.GameMessage;
+import com.brack.memorygame.socket.model.GameSession;
 import com.brack.memorygame.socket.model.MessageType;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
@@ -15,20 +19,52 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static com.brack.memorygame.gameplay.CellOwner.*;
 
 public class GameSocketHandler implements WebSocketHandler {
 
+    private Logger logger = LoggerFactory.getLogger(GameSocketHandler.class);
     private static final String START_MESSAGE =
             new GameMessage("Waiting...", MessageType.INFO).write();
 
     private static final GameBoard GAME_BOARD = new GameBoard();
     private static final Map<GameBoard, List<WebSocketSession>> gameToSocket = new HashMap<>();
+    private static final List<GameSession> gameSessions = new ArrayList<>();
 
     @NotNull
     @Override
     public Mono<Void> handle(WebSocketSession session) {
 
+        var gameSession = gameSessions.stream()
+                .filter(GameSession::getAvailable)
+                .findFirst()
+                .map(it -> {
+                    it.setAvailable(false);
+                    return it;
+                }).orElseGet(() -> {
+                    var it = new GameSession();
+                    gameSessions.add(it);
+                    return it;
+                });
+
+        var player = gameSession.getAvailable() ? PLAYER_A : PLAYER_B;
+
+        Flux<GameMessage> playerFlux =
+        session.receive()
+            .doOnComplete( () -> logger.info("terminated"))
+            .map(WebSocketMessage::getPayloadAsText)
+            .map(GameMessage::of)
+            .concatMap(it -> gameSession.handleMessage(player, it));
+
+        Flux<GameMessage> opponentFlux = gameSession.getOpponentSink(player).asFlux();
+
+        return session.send(
+            playerFlux.mergeWith(opponentFlux).map(GameMessage::write).map(session::textMessage)
+        );
+        /*
             var initialization = gameToSocket.entrySet().stream().filter(e -> e.getValue().size() == 1)
                 .findFirst()
                 .map(e -> {
@@ -48,19 +84,21 @@ public class GameSocketHandler implements WebSocketHandler {
                 })
                 .map(Flux::concat).orElseThrow();
 
-        Mono<WebSocketMessage> startMessage = Mono.just(session.textMessage(START_MESSAGE));
+
+
         Flux<WebSocketMessage> input = session.receive()
                 .map(WebSocketMessage::getPayloadAsText)
                 .map(GameMessage::of)
                 .filter(msg -> msg.getType() == MessageType.CLIENT_CLICK)
                 .map(msg -> {
                     int index = Integer.parseInt(msg.getText());
-                    GAME_BOARD.updateCell(index, CellOwner.PLAYER_A);
+                    GAME_BOARD.updateCell(index, PLAYER_A);
                     return new GameMessage(msg.getText(), MessageType.SHOW_FIGURE).write();
                 })
                 .map(session::textMessage)
                 .doOnError(ex -> System.out.println(ex.getMessage()));
 
-        return initialization.then(session.send(Flux.merge(startMessage, input)));
+        return initialization.then(session.send(input));
+        */
     }
 }
