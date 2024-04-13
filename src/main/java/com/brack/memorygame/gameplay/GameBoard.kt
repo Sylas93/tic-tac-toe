@@ -7,11 +7,17 @@ class GameBoard {
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private val cells: MutableList<CellOwner> = MutableList(9) { CellOwner.NONE }
 
+    /**
+     * @param index the cell tp update
+     * @param owner the player making the play
+     *
+     * @return success update if the previous owner was [CellOwner.NONE], false otherwise
+     */
     fun updateCell(index: Int, owner: CellOwner) =
-        cells.firstOrNull { it == CellOwner.NONE }?.let {
+        cells[index].takeIf { it == CellOwner.NONE }?.let {
             cells[index] = owner
-            checkWinner()
-        }
+            true
+        } ?: false
 
     /**
      * @return
