@@ -13,7 +13,6 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,32 +27,21 @@ public class GameSocketHandler implements WebSocketHandler {
 
     private static final GameBoard GAME_BOARD = new GameBoard();
     private static final Map<GameBoard, List<WebSocketSession>> gameToSocket = new HashMap<>();
-    private static final List<GameSession> gameSessions = new ArrayList<>();
 
     @NotNull
     @Override
     public Mono<Void> handle(WebSocketSession session) {
 
-        var gameSession = gameSessions.stream()
-                .filter(GameSession::isGameOpen)
-                .findFirst()
-                .map(it -> {
-                    it.startGame();
-                    return it;
-                }).orElseGet(() -> {
-                    var it = new GameSession();
-                    gameSessions.add(it);
-                    return it;
-                });
+        var gameSession = GameSession.getSession();
 
         var player = gameSession.isGameOpen() ? PLAYER_A : PLAYER_B;
 
         Flux<GameMessage> playerFlux =
-        session.receive()
-            .doOnComplete( () -> logger.info("terminated"))
-            .map(WebSocketMessage::getPayloadAsText)
-            .map(GameMessage::of)
-            .concatMap(it -> gameSession.handleMessage(player, it));
+            session.receive()
+                .doOnComplete( () -> logger.info("terminated"))
+                .map(WebSocketMessage::getPayloadAsText)
+                .map(GameMessage::of)
+                .concatMap(it -> gameSession.handleMessage(player, it));
 
         Flux<GameMessage> serverFlux = gameSession.getSink(player).asFlux();
 

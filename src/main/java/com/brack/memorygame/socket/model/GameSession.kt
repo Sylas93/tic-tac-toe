@@ -87,4 +87,16 @@ class GameSession {
         PLAYING,
         CLOSED
     }
+
+    companion object {
+        private val gameSessions = mutableListOf<GameSession>()
+
+        @JvmStatic
+        fun getSession() = gameSessions
+            .firstOrNull(GameSession::isGameOpen)
+            ?.let {
+                it.startGame()
+                it
+            } ?: (GameSession().also { gameSessions.add(it) })
+    }
 }
