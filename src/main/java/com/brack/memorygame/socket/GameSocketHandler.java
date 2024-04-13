@@ -1,11 +1,9 @@
 package com.brack.memorygame.socket;
 
-import com.brack.memorygame.gameplay.CellOwner;
 import com.brack.memorygame.gameplay.GameBoard;
 import com.brack.memorygame.socket.model.GameMessage;
 import com.brack.memorygame.socket.model.GameSession;
 import com.brack.memorygame.socket.model.MessageType;
-import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import static java.util.function.Predicate.*;
 
 import static com.brack.memorygame.gameplay.CellOwner.*;
 
@@ -39,10 +36,10 @@ public class GameSocketHandler implements WebSocketHandler {
     public Mono<Void> handle(WebSocketSession session) {
 
         var gameSession = gameSessions.stream()
-                .filter(GameSession::getAvailable)
+                .filter(not(GameSession::getGameStarted))
                 .findFirst()
                 .map(it -> {
-                    it.setAvailable(false);
+                    it.setGameStarted(true);
                     return it;
                 }).orElseGet(() -> {
                     var it = new GameSession();
@@ -50,7 +47,7 @@ public class GameSocketHandler implements WebSocketHandler {
                     return it;
                 });
 
-        var player = gameSession.getAvailable() ? PLAYER_A : PLAYER_B;
+        var player = gameSession.getGameStarted() ? PLAYER_B : PLAYER_A;
 
         Flux<GameMessage> playerFlux =
         session.receive()

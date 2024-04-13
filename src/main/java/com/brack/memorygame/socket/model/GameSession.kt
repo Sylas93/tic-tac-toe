@@ -9,7 +9,7 @@ class GameSession(/*val playerSessionA : String*/) {
     private val gameBoard = GameBoard()
     val sinkA: Sinks.Many<GameMessage> = Sinks.many().unicast().onBackpressureBuffer()
     val sinkB: Sinks.Many<GameMessage> = Sinks.many().unicast().onBackpressureBuffer()
-    var available : Boolean = true
+    var gameStarted : Boolean = false
 
     fun getOpponentSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkB else sinkA
@@ -18,7 +18,7 @@ class GameSession(/*val playerSessionA : String*/) {
         if (player == CellOwner.PLAYER_A) sinkA else sinkB
 
     fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
-        if (gameMessage.type == MessageType.CLIENT_CLICK) {
+        if (gameStarted && gameMessage.type == MessageType.CLIENT_CLICK) {
             val showFigureMessage = GameMessage(gameMessage.text, MessageType.SHOW_FIGURE)
             gameBoard.updateCell(gameMessage.text.toInt(), player)
             getSink(player).tryEmitNext(showFigureMessage)
