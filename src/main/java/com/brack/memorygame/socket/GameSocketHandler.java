@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static java.util.function.Predicate.*;
 
 import static com.brack.memorygame.gameplay.CellOwner.*;
 
@@ -56,10 +55,12 @@ public class GameSocketHandler implements WebSocketHandler {
             .map(GameMessage::of)
             .concatMap(it -> gameSession.handleMessage(player, it));
 
-        Flux<GameMessage> opponentFlux = gameSession.getSink(player).asFlux();
+        Flux<GameMessage> serverFlux = gameSession.getSink(player).asFlux();
+
+        //serverFlux.doOnComplete(session::close);
 
         return session.send(
-            playerFlux.mergeWith(opponentFlux).map(GameMessage::write).map(session::textMessage)
+            playerFlux.mergeWith(serverFlux).map(GameMessage::write).map(session::textMessage)
         );
         /*
             var initialization = gameToSocket.entrySet().stream().filter(e -> e.getValue().size() == 1)
