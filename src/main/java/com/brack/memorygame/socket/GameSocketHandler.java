@@ -36,10 +36,10 @@ public class GameSocketHandler implements WebSocketHandler {
     public Mono<Void> handle(WebSocketSession session) {
 
         var gameSession = gameSessions.stream()
-                .filter(not(GameSession::getGameStarted))
+                .filter(GameSession::isGameOpen)
                 .findFirst()
                 .map(it -> {
-                    it.setGameStarted(true);
+                    it.startGame();
                     return it;
                 }).orElseGet(() -> {
                     var it = new GameSession();
@@ -47,7 +47,7 @@ public class GameSocketHandler implements WebSocketHandler {
                     return it;
                 });
 
-        var player = gameSession.getGameStarted() ? PLAYER_B : PLAYER_A;
+        var player = gameSession.isGameOpen() ? PLAYER_A : PLAYER_B;
 
         Flux<GameMessage> playerFlux =
         session.receive()
