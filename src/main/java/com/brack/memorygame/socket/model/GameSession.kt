@@ -17,16 +17,13 @@ class GameSession(/*val playerSessionA : String*/) {
     fun getSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkA else sinkB
 
-    fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> {
-        return if (gameMessage.type == MessageType.CLIENT_CLICK) {
-            gameBoard.updateCell(gameMessage.text.toInt(), player)
+    fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
+        if (gameMessage.type == MessageType.CLIENT_CLICK) {
             val showFigureMessage = GameMessage(gameMessage.text, MessageType.SHOW_FIGURE)
+            gameBoard.updateCell(gameMessage.text.toInt(), player)
             getSink(player).tryEmitNext(showFigureMessage)
             Flux.just(showFigureMessage)
-        } else {
-            Flux.just(gameMessage)
-        }
-    }
+        } else Flux.empty()
     //private lateinit var playerSessionB : String
 /*
     fun accept(sessionId: String) =
