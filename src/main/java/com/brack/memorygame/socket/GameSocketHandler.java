@@ -56,7 +56,7 @@ public class GameSocketHandler implements WebSocketHandler {
             .map(GameMessage::of)
             .concatMap(it -> gameSession.handleMessage(player, it));
 
-        Flux<GameMessage> opponentFlux = gameSession.getOpponentSink(player).asFlux();
+        Flux<GameMessage> opponentFlux = gameSession.getSink(player).asFlux();
 
         return session.send(
             playerFlux.mergeWith(opponentFlux).map(GameMessage::write).map(session::textMessage)

@@ -23,8 +23,8 @@ class GameSession {
         state = GameSessionState.PLAYING
     }
 
-    fun getOpponentSink(player: CellOwner) =
-        if (player == CellOwner.PLAYER_A) sinkB else sinkA
+    fun getSink(player: CellOwner) =
+        if (player == CellOwner.PLAYER_A) sinkA else sinkB
 
     fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
         if (turn == player && state == GameSessionState.PLAYING && gameMessage.type == MessageType.CLIENT_CLICK) {
@@ -40,7 +40,7 @@ class GameSession {
                 }
                 player -> {
                     state = GameSessionState.CLOSED
-                    with(getSink(player)){
+                    with(getOpponentSink(player)){
                         tryEmitNext(showFigureMessage)
                         tryEmitNext(LOST_MESSAGE)
                     }
@@ -58,8 +58,8 @@ class GameSession {
             }
         } else Flux.empty()
 
-    private fun getSink(player: CellOwner) =
-        if (player == CellOwner.PLAYER_A) sinkA else sinkB
+    private fun getOpponentSink(player: CellOwner) =
+        if (player == CellOwner.PLAYER_A) sinkB else sinkA
 
     enum class GameSessionState {
         OPEN,
