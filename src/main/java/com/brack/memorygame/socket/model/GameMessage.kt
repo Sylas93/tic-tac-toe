@@ -22,6 +22,11 @@ data class GameMessage(
                 logger.error("Error parsing client message")
                 GameMessage("Unexpected input", MessageType.ERROR)
             }
+        val YOUR_TURN_MESSAGE = GameMessage("Your turn!", MessageType.INFO)
+        val OPPONENT_TURN_MESSAGE = GameMessage("Opponent turn!", MessageType.INFO)
+        val LOST_MESSAGE = GameMessage("You lost!", MessageType.INFO)
+        val WIN_MESSAGE = GameMessage("You won!", MessageType.INFO)
+        val TIE_MESSAGE = GameMessage("Tie", MessageType.INFO)
     }
 }
 
