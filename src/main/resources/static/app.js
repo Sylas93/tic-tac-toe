@@ -1,5 +1,6 @@
 const { webSocket } = rxjs.webSocket;
 var socketConnection = webSocket('ws://localhost:8080/socket');
+var figure = "";
 
 $(document).ready(function () {
     console.log('ready');
@@ -22,7 +23,7 @@ function initialize() {
     for (let i = 0; i < 9; i++) {
         $(".row").append(`
             <div id=${i} onClick="clickImageHandler(this.id)" class="col-xs-4 themed-grid-col">
-                <img src="images/o-cell.jpg" class="img-responsive center-block">
+                <img src="images/empty-cell.jpg" class="img-responsive center-block">
             </div>
         `)
     }
@@ -45,7 +46,9 @@ function createMessage(text, type) {
 
 function handleNext(msg) {
     console.log(msg);
-    if (msg.type === "SHOW_FIGURE") {
-        $(`#${msg.text} .img-responsive`).attr("src","images/x-cell.jpg");
+    if (msg.type === "FIGURE") {
+        figure = msg.text;
+    } else if (msg.type === "SHOW") {
+        $(`#${msg.text} .img-responsive`).attr("src",`images/${figure}.jpg`);
     }
 }

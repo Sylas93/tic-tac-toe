@@ -28,7 +28,7 @@ class GameSession {
 
     fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
         if (turn == player && state == GameSessionState.PLAYING && gameMessage.type == MessageType.CLIENT_CLICK) {
-            val showFigureMessage = GameMessage(gameMessage.text, MessageType.SHOW_FIGURE)
+            val showFigureMessage = GameMessage(gameMessage.text, MessageType.SHOW)
             when(gameBoard.updateCell(gameMessage.text.toInt(), player)) {
                 CellOwner.NONE -> {
                     with(getSink(player)){

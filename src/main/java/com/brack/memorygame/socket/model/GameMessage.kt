@@ -27,6 +27,8 @@ data class GameMessage(
         val LOST_MESSAGE = GameMessage("You lost!", MessageType.INFO)
         val WIN_MESSAGE = GameMessage("You won!", MessageType.INFO)
         val TIE_MESSAGE = GameMessage("Tie", MessageType.INFO)
+        val X_FIGURE_MESSAGE = GameMessage("x-cell", MessageType.FIGURE)
+        val O_FIGURE_MESSAGE = GameMessage("o-cell", MessageType.FIGURE)
     }
 }
 
