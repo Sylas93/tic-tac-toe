@@ -18,6 +18,32 @@ class GameBoardTest {
     }
 
     @Test
+    @DisplayName("Should return no winner when game is in progress")
+    fun checkWinnerForInProgress() {
+        val gameBoard = GameBoard().given(
+            mutableListOf(
+                PLAYER_A, NONE, PLAYER_B,
+                PLAYER_B, NONE, NONE,
+                PLAYER_A, NONE, PLAYER_B
+            )
+        )
+        assertEquals(NONE, gameBoard.checkWinner())
+    }
+
+    @Test
+    @DisplayName("Should return null when it is a tie")
+    fun checkWinnerForTie() {
+        val gameBoard = GameBoard().given(
+            mutableListOf(
+                PLAYER_A, PLAYER_B, PLAYER_B,
+                PLAYER_B, PLAYER_A, PLAYER_A,
+                PLAYER_A, PLAYER_B, PLAYER_B
+            )
+        )
+        assertNull(gameBoard.checkWinner())
+    }
+
+    @Test
     @DisplayName("Should throw exception when moves count is not balanced")
     fun checkMovesCount() {
         val gameBoard = GameBoard().given(
