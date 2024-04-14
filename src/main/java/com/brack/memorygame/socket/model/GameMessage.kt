@@ -5,13 +5,14 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 val mapper = jacksonObjectMapper()
-val logger: Logger = LoggerFactory.getLogger(GameMessage::class.java)
+private val logger: Logger = LoggerFactory.getLogger(GameMessage::class.java)
 
 data class GameMessage(
     val text: String,
     val type: MessageType
 ) {
-    fun write(): String = mapper.writeValueAsString(this)
+    fun write() : String = mapper.writeValueAsString(this)
+    fun isLast() : Boolean = this == WIN_MESSAGE || this == LOST_MESSAGE || this == TIE_MESSAGE
 
     companion object {
         @JvmStatic

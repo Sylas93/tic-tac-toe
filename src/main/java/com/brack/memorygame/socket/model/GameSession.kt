@@ -10,8 +10,13 @@ import com.brack.memorygame.socket.model.GameMessage.Companion.WAITING_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.WIN_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.X_FIGURE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.YOUR_TURN_MESSAGE
+import kotlinx.coroutines.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
+
+private val logger: Logger = LoggerFactory.getLogger(GameSession::class.java)
 
 class GameSession {
     private var turn = CellOwner.PLAYER_A
@@ -90,6 +95,18 @@ class GameSession {
 
     companion object {
         private val gameSessions = mutableListOf<GameSession>()
+
+        init {
+            CoroutineScope(Dispatchers.Default).launch {
+                while (true) {
+                    delay(1000)
+                    gameSessions.removeAll {
+                        it.state == GameSessionState.CLOSED
+                    }
+                    logger.info("Active games: ${gameSessions.size}")
+                }
+            }
+        }
 
         @JvmStatic
         fun getSession() = gameSessions

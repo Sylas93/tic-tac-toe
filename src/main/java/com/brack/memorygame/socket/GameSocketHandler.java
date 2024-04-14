@@ -45,10 +45,10 @@ public class GameSocketHandler implements WebSocketHandler {
 
         Flux<GameMessage> serverFlux = gameSession.getSink(player).asFlux();
 
-        //serverFlux.doOnComplete(session::close);
-
         return session.send(
-            playerFlux.mergeWith(serverFlux).map(GameMessage::write).map(session::textMessage)
+            playerFlux.mergeWith(serverFlux)
+                .takeUntil(GameMessage::isLast)
+                .map(GameMessage::write).map(session::textMessage)
         );
         /*
             var initialization = gameToSocket.entrySet().stream().filter(e -> e.getValue().size() == 1)
