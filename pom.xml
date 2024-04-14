@@ -63,6 +63,11 @@
 			<artifactId>kotlinx-coroutines-reactive</artifactId>
 			<version>${kotlinx-coroutines.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlinx</groupId>
+			<artifactId>kotlinx-coroutines-reactor</artifactId>
+			<version>${kotlinx-coroutines.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

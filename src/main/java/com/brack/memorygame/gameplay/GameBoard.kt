@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import kotlin.math.absoluteValue
 
 class GameBoard {
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private val cells: MutableList<CellOwner> = MutableList(9) { CellOwner.NONE }
 
     /**
@@ -26,28 +25,27 @@ class GameBoard {
      * * [CellOwner.PLAYER_B] if player B won
      * * `null` after game end
      */
-    fun checkWinner() : CellOwner? = runBlocking {
+    suspend fun checkWinner() : CellOwner? =
+        withContext(Dispatchers.Default) {
             checkBoardHealth()
-            with(coroutineScope) {
-                listOf(
-                    async { lineCheck(Int::rem) }, // columns
-                    async { lineCheck(Int::div) }, // rows
-                    async { // major diagonal
-                        diagonalCheck { index, value ->
-                            index % 4 == 0 && value != CellOwner.NONE
-                        }
-                    },
-                    async { // minor diagonal
-                        diagonalCheck { index, value ->
-                            index != 0 && index != 8 && value != CellOwner.NONE && index % 2 == 0
-                        }
+            listOf(
+                async { lineCheck(Int::rem) }, // columns
+                async { lineCheck(Int::div) }, // rows
+                async { // major diagonal
+                    diagonalCheck { index, value ->
+                        index % 4 == 0 && value != CellOwner.NONE
                     }
-                ).awaitAll()
-            }
+                },
+                async { // minor diagonal
+                    diagonalCheck { index, value ->
+                        index != 0 && index != 8 && value != CellOwner.NONE && index % 2 == 0
+                    }
+                }
+            ).awaitAll()
         }
-            .filterNotNull()
-            .distinct().also { check(it.size <= 1) { "Session corrupted: multiple winners" } }
-            .firstOrNull() ?: cells.firstOrNull { it == CellOwner.NONE }
+        .filterNotNull()
+        .distinct().also { check(it.size <= 1) { "Session corrupted: multiple winners" } }
+        .firstOrNull() ?: cells.firstOrNull { it == CellOwner.NONE }
 
     private fun checkBoardHealth() {
         val movesCountDiff = cells.count { it == CellOwner.PLAYER_A } -

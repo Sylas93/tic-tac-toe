@@ -11,9 +11,14 @@ import com.brack.memorygame.socket.model.GameMessage.Companion.WIN_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.X_FIGURE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.YOUR_TURN_MESSAGE
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.reactor.asFlux
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 
 private val logger: Logger = LoggerFactory.getLogger(GameSession::class.java)
@@ -42,40 +47,43 @@ class GameSession {
     fun getSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkA else sinkB
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
         if (boardUpdate(player, gameMessage)) {
             val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
             val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
-            when(gameBoard.checkWinner()) {
-                CellOwner.NONE -> {
-                    with(getOpponentSink(player)){
-                        tryEmitNext(figureMessage)
-                        tryEmitNext(showMessage)
-                        tryEmitNext(YOUR_TURN_MESSAGE)
+            Mono.just(gameBoard).asFlow().flatMapConcat {
+                when(it.checkWinner()) {
+                    CellOwner.NONE -> {
+                        with(getOpponentSink(player)){
+                            tryEmitNext(figureMessage)
+                            tryEmitNext(showMessage)
+                            tryEmitNext(YOUR_TURN_MESSAGE)
+                        }
+                        turn = turn.opponent()
+                        flowOf(figureMessage, showMessage, OPPONENT_TURN_MESSAGE)
                     }
-                    turn = turn.opponent()
-                    Flux.just(figureMessage, showMessage, OPPONENT_TURN_MESSAGE)
-                }
-                player -> {
-                    state = GameSessionState.CLOSED
-                    with(getOpponentSink(player)){
-                        tryEmitNext(figureMessage)
-                        tryEmitNext(showMessage)
-                        tryEmitNext(LOST_MESSAGE)
+                    player -> {
+                        state = GameSessionState.CLOSED
+                        with(getOpponentSink(player)){
+                            tryEmitNext(figureMessage)
+                            tryEmitNext(showMessage)
+                            tryEmitNext(LOST_MESSAGE)
+                        }
+                        flowOf(figureMessage, showMessage, WIN_MESSAGE)
                     }
-                    Flux.just(figureMessage, showMessage, WIN_MESSAGE)
-                }
-                null -> {
-                    state = GameSessionState.CLOSED
-                    with(getOpponentSink(player)){
-                        tryEmitNext(figureMessage)
-                        tryEmitNext(showMessage)
-                        tryEmitNext(TIE_MESSAGE)
+                    null -> {
+                        state = GameSessionState.CLOSED
+                        with(getOpponentSink(player)){
+                            tryEmitNext(figureMessage)
+                            tryEmitNext(showMessage)
+                            tryEmitNext(TIE_MESSAGE)
+                        }
+                        flowOf(figureMessage, showMessage, TIE_MESSAGE)
                     }
-                    Flux.just(figureMessage, showMessage, TIE_MESSAGE)
+                    else -> throw IllegalStateException("Player cannot make opponent win")
                 }
-                else -> throw IllegalStateException("Player cannot make opponent win")
-            }
+            }.asFlux()
         } else Flux.empty()
 
     private fun boardUpdate(player: CellOwner, gameMessage: GameMessage) =
