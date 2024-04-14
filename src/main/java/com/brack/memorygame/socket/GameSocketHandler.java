@@ -32,7 +32,9 @@ public class GameSocketHandler implements WebSocketHandler {
                 .map(GameMessage::of)
                 .concatMap(it -> gameSession.handleMessage(player, it));
 
-        Flux<GameMessage> serverFlux = gameSession.getSink(player).asFlux();
+        Flux<GameMessage> serverFlux = gameSession.getSink(player).asFlux()
+            .doOnCancel(() -> logger.info("server flux cancelled"))
+            .doOnComplete(() -> logger.info("server flux completed"));
 
         return session.send(
             playerFlux.mergeWith(serverFlux)
