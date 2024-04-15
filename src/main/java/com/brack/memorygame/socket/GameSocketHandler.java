@@ -27,6 +27,6 @@ public class GameSocketHandler implements WebSocketHandler {
 
         return session.send(
             feedback.map(GameMessage::write).map(session::textMessage)
-        );
+        ).doOnError(e -> logger.error("Socket error: {}", e.getMessage()));
     }
 }

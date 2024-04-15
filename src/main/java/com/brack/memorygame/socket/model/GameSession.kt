@@ -100,6 +100,7 @@ class GameSession {
                     opponentSink(player).emit(WITHDRAWAL_MESSAGE)
                 }
             }
+            .doOnError { logger.error("Error: ${it.message}") }
             .takeUntil(GameMessage::isLast)
 
     private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
