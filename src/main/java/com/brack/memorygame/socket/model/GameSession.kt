@@ -42,31 +42,22 @@ class GameSession {
                 val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
                 when(gameBoard.checkWinner()) {
                     CellOwner.NONE -> {
-                        with(opponentSink(player)){
-                            tryEmitNext(figureMessage)
-                            tryEmitNext(showMessage)
-                            tryEmitNext(YOUR_TURN_MESSAGE)
-                        }
                         turn = turn.opponent()
-                        flowOf(figureMessage, showMessage, OPPONENT_TURN_MESSAGE)
+                        arrayOf(figureMessage, showMessage)
+                            .also { opponentSink(player).emit(*it, YOUR_TURN_MESSAGE) }
+                            .let { flowOf(*it, OPPONENT_TURN_MESSAGE) }
                     }
                     player -> {
                         phase = GameSessionPhase.CLOSED
-                        with(opponentSink(player)){
-                            tryEmitNext(figureMessage)
-                            tryEmitNext(showMessage)
-                            tryEmitNext(LOST_MESSAGE)
-                        }
-                        flowOf(figureMessage, showMessage, WIN_MESSAGE)
+                        arrayOf(figureMessage, showMessage)
+                            .also { opponentSink(player).emit(*it, LOST_MESSAGE) }
+                            .let { flowOf(*it, WIN_MESSAGE) }
                     }
                     null -> {
                         phase = GameSessionPhase.CLOSED
-                        with(opponentSink(player)){
-                            tryEmitNext(figureMessage)
-                            tryEmitNext(showMessage)
-                            tryEmitNext(TIE_MESSAGE)
-                        }
-                        flowOf(figureMessage, showMessage, TIE_MESSAGE)
+                        arrayOf(figureMessage, showMessage, TIE_MESSAGE)
+                            .also { opponentSink(player).emit(*it) }
+                            .let { flowOf(*it) }
                     }
                     else -> throw IllegalStateException("Player cannot make opponent win")
                 }
@@ -131,3 +122,6 @@ class GameSession {
             } ?: (GameSession().also { gameSessions.add(it) })
     }
 }
+
+fun Sinks.Many<GameMessage>.emit(vararg message: GameMessage) =
+    message.map { tryEmitNext(it) }.all { it == Sinks.EmitResult.OK }
