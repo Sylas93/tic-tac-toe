@@ -33,9 +33,10 @@ public class GameSocketHandler implements WebSocketHandler {
             gameSession.playerFeedback(player, playerInput);
 
         return session.send(
-            playerFeedback
-                .takeUntil(GameMessage::isLast)
-                .map(GameMessage::write).map(session::textMessage)
-        );
+            playerFeedback.map(GameMessage::write).map(session::textMessage)
+        )
+            .doOnCancel(() -> logger.info("session cancelled"))
+            .doOnTerminate(() -> logger.info("session terminated"))
+            .doOnError(ex -> logger.info("session error: {}", ex.getMessage()));
     }
 }

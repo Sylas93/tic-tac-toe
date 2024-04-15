@@ -65,7 +65,7 @@ class GameSession {
                emptyFlow()
             }
         }.asFlux()
-            .mergeWith(sink(player))
+            .mergeWith(sink(player)).takeUntil(GameMessage::isLast)
             .doOnCancel { logger.info("server flux cancelled") }
             .doOnComplete { logger.info("server flux completed") }
             .doOnError { logger.error("server flux error: ${it.message}") }
