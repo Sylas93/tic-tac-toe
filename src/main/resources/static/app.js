@@ -55,7 +55,7 @@ function handleError(err) {
         if (errorFlag) {
             $("h2").html("Ops, something went wrong!<br><br>Tap here to play again!");
         }
-    }, 10000);
+    }, 20000);
 }
 
 function handleComplete() {
