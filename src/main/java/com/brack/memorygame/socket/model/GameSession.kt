@@ -34,22 +34,15 @@ class GameSession {
 
     fun isLobbyOpen() = phase == GameSessionPhase.LOBBY
 
-    fun serverInput(player: CellOwner): Flux<GameMessage> =
-        if (player == CellOwner.PLAYER_A) {
-            sinkA
-        } else {
-            sinkB
-        }.asFlux()
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun serverFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
+    fun playerFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
         playerInput.asFlow().flatMapConcat { gameMessage ->
             if (updateBoard(player, gameMessage)) {
                 val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
                 val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
                 when(gameBoard.checkWinner()) {
                     CellOwner.NONE -> {
-                        with(getOpponentSink(player)){
+                        with(opponentSink(player)){
                             tryEmitNext(figureMessage)
                             tryEmitNext(showMessage)
                             tryEmitNext(YOUR_TURN_MESSAGE)
@@ -59,7 +52,7 @@ class GameSession {
                     }
                     player -> {
                         phase = GameSessionPhase.CLOSED
-                        with(getOpponentSink(player)){
+                        with(opponentSink(player)){
                             tryEmitNext(figureMessage)
                             tryEmitNext(showMessage)
                             tryEmitNext(LOST_MESSAGE)
@@ -68,7 +61,7 @@ class GameSession {
                     }
                     null -> {
                         phase = GameSessionPhase.CLOSED
-                        with(getOpponentSink(player)){
+                        with(opponentSink(player)){
                             tryEmitNext(figureMessage)
                             tryEmitNext(showMessage)
                             tryEmitNext(TIE_MESSAGE)
@@ -81,6 +74,10 @@ class GameSession {
                emptyFlow()
             }
         }.asFlux()
+            .mergeWith(sink(player))
+            .doOnCancel { logger.info("server flux cancelled") }
+            .doOnComplete { logger.info("server flux completed") }
+            .doOnError { logger.error("server flux error: ${it.message}") }
 
     private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
         phase == GameSessionPhase.PLAYING &&
@@ -88,7 +85,14 @@ class GameSession {
         gameMessage.type == MessageType.CLIENT_CLICK &&
         gameBoard.updateCell(gameMessage.text.toInt(), player)
 
-    private fun getOpponentSink(player: CellOwner) =
+    private fun sink(player: CellOwner): Flux<GameMessage> =
+        if (player == CellOwner.PLAYER_A) {
+            sinkA
+        } else {
+            sinkB
+        }.asFlux()
+
+    private fun opponentSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkB else sinkA
 
     private fun startGame() {
@@ -109,7 +113,7 @@ class GameSession {
         init {
             CoroutineScope(Dispatchers.Default).launch {
                 while (true) {
-                    delay(1000)
+                    delay(10000)
                     gameSessions.removeAll {
                         it.phase == GameSessionPhase.CLOSED
                     }

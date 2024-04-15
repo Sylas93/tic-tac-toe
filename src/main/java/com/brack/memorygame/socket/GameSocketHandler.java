@@ -2,7 +2,6 @@ package com.brack.memorygame.socket;
 
 import com.brack.memorygame.socket.model.GameMessage;
 import com.brack.memorygame.socket.model.GameSession;
-import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +30,10 @@ public class GameSocketHandler implements WebSocketHandler {
                 .map(GameMessage::of);
 
         Flux<GameMessage> playerFeedback =
-            gameSession.serverFeedback(player, playerInput);
-
-        Flux<GameMessage> serverInput = gameSession.serverInput(player)
-            .doOnCancel(() -> logger.info("server flux cancelled"))
-            .doOnComplete(() -> logger.info("server flux completed"));
+            gameSession.playerFeedback(player, playerInput);
 
         return session.send(
-            playerFeedback.mergeWith(serverInput)
+            playerFeedback
                 .takeUntil(GameMessage::isLast)
                 .map(GameMessage::write).map(session::textMessage)
         );
