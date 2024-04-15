@@ -32,10 +32,34 @@ class GameSession {
 
     init { sinkA.tryEmitNext(WAITING_MESSAGE) }
 
-    fun isLobbyOpen() = phase == GameSessionPhase.LOBBY
+    companion object Manager {
+        private val gameSessions = mutableListOf<GameSession>()
+
+        init {
+            CoroutineScope(Dispatchers.Default).launch {
+                while (true) {
+                    delay(10000)
+                    gameSessions.removeAll {
+                        it.phase == GameSessionPhase.CLOSED
+                    }
+                    logger.info("Active games: ${gameSessions.size}")
+                }
+            }
+        }
+
+        @JvmStatic
+        fun feedback(playerInput: Flux<GameMessage>) : Flux<GameMessage> {
+            return gameSessions.firstOrNull { it.phase == GameSessionPhase.LOBBY }
+                ?.also { it.startGame() }
+                ?.playerFeedback(CellOwner.PLAYER_B, playerInput)
+                ?: GameSession()
+                    .also { gameSessions.add(it) }
+                    .playerFeedback(CellOwner.PLAYER_A, playerInput)
+        }
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun playerFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
+    private fun playerFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
         playerInput.asFlow().flatMapConcat { gameMessage ->
             if (updateBoard(player, gameMessage)) {
                 val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
@@ -65,7 +89,7 @@ class GameSession {
                emptyFlow()
             }
         }.asFlux()
-            .mergeWith(sink(player))
+            .mergeWith(sink(player).asFlux())
             .doOnCancel {
                 if (phase == GameSessionPhase.CLOSED) {
                     logger.info("server flux cancelled")
@@ -83,12 +107,12 @@ class GameSession {
         gameMessage.type == MessageType.CLIENT_CLICK &&
         gameBoard.updateCell(gameMessage.text.toInt(), player)
 
-    private fun sink(player: CellOwner): Flux<GameMessage> =
+    private fun sink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) {
             sinkA
         } else {
             sinkB
-        }.asFlux()
+        }
 
     private fun opponentSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkB else sinkA
@@ -99,34 +123,10 @@ class GameSession {
         sinkB.tryEmitNext(OPPONENT_TURN_MESSAGE)
     }
 
-    enum class GameSessionPhase {
+    private enum class GameSessionPhase {
         LOBBY,
         PLAYING,
         CLOSED
-    }
-
-    companion object {
-        private val gameSessions = mutableListOf<GameSession>()
-
-        init {
-            CoroutineScope(Dispatchers.Default).launch {
-                while (true) {
-                    delay(10000)
-                    gameSessions.removeAll {
-                        it.phase == GameSessionPhase.CLOSED
-                    }
-                    logger.info("Active games: ${gameSessions.size}")
-                }
-            }
-        }
-
-        @JvmStatic
-        fun getSession() = gameSessions
-            .firstOrNull(GameSession::isLobbyOpen)
-            ?.let {
-                it.startGame()
-                it
-            } ?: (GameSession().also { gameSessions.add(it) })
     }
 }
 

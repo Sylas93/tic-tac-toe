@@ -11,8 +11,6 @@ import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import static com.brack.memorygame.gameplay.CellOwner.*;
-
 public class GameSocketHandler implements WebSocketHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GameSocketHandler.class);
@@ -20,19 +18,15 @@ public class GameSocketHandler implements WebSocketHandler {
     @NotNull
     @Override
     public Mono<Void> handle(WebSocketSession session) {
-        var gameSession = GameSession.getSession();
-        var player = gameSession.isLobbyOpen() ? PLAYER_A : PLAYER_B;
-
         Flux<GameMessage> playerInput =
             session.receive()
                 .map(WebSocketMessage::getPayloadAsText)
                 .map(GameMessage::of);
 
-        Flux<GameMessage> playerFeedback =
-            gameSession.playerFeedback(player, playerInput);
+        Flux<GameMessage> feedback = GameSession.feedback(playerInput);
 
         return session.send(
-            playerFeedback.map(GameMessage::write).map(session::textMessage)
+            feedback.map(GameMessage::write).map(session::textMessage)
         );
     }
 }
