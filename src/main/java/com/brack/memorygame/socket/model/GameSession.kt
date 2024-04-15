@@ -2,6 +2,7 @@ package com.brack.memorygame.socket.model
 
 import com.brack.memorygame.gameplay.CellOwner
 import com.brack.memorygame.gameplay.GameBoard
+import com.brack.memorygame.socket.model.GameMessage.Companion.WITHDRAWAL_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.LOST_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.OPPONENT_TURN_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.O_FIGURE_MESSAGE
@@ -96,7 +97,7 @@ class GameSession {
                 } else {
                     logger.warn("Player let game before end")
                     phase = GameSessionPhase.CLOSED
-                    opponentSink(player).emit(WIN_MESSAGE)
+                    opponentSink(player).emit(WITHDRAWAL_MESSAGE)
                 }
             }
             .takeUntil(GameMessage::isLast)

@@ -14,7 +14,11 @@ data class GameMessage(
 ) {
     fun write() : String = mapper.writeValueAsString(this)
     @JsonIgnore
-    fun isLast() : Boolean = this == WIN_MESSAGE || this == LOST_MESSAGE || this == TIE_MESSAGE
+    fun isLast() : Boolean =
+        this == WIN_MESSAGE ||
+        this == LOST_MESSAGE ||
+        this == TIE_MESSAGE ||
+        this == WITHDRAWAL_MESSAGE
 
     companion object {
         private const val PLAY_AGAIN_TEXT = "<br><br>Tap here to play again!"
@@ -32,6 +36,10 @@ data class GameMessage(
         val LOST_MESSAGE = GameMessage("You lost!$PLAY_AGAIN_TEXT", MessageType.INFO)
         val WIN_MESSAGE = GameMessage("You won!$PLAY_AGAIN_TEXT", MessageType.INFO)
         val TIE_MESSAGE = GameMessage("Tie!$PLAY_AGAIN_TEXT", MessageType.INFO)
+        val WITHDRAWAL_MESSAGE = GameMessage(
+            "Your opponent left the game!$PLAY_AGAIN_TEXT",
+            MessageType.INFO
+        )
         val X_FIGURE_MESSAGE = GameMessage("x-cell", MessageType.FIGURE)
         val O_FIGURE_MESSAGE = GameMessage("o-cell", MessageType.FIGURE)
     }
