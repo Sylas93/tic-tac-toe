@@ -25,7 +25,6 @@ public class GameSocketHandler implements WebSocketHandler {
 
         Flux<GameMessage> playerInput =
             session.receive()
-                .doOnComplete(() -> logger.info("terminated"))
                 .map(WebSocketMessage::getPayloadAsText)
                 .map(GameMessage::of);
 
@@ -34,9 +33,6 @@ public class GameSocketHandler implements WebSocketHandler {
 
         return session.send(
             playerFeedback.map(GameMessage::write).map(session::textMessage)
-        )
-            .doOnCancel(() -> logger.info("session cancelled"))
-            .doOnTerminate(() -> logger.info("session terminated"))
-            .doOnError(ex -> logger.info("session error: {}", ex.getMessage()));
+        );
     }
 }

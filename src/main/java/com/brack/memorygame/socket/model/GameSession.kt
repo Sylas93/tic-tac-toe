@@ -67,8 +67,6 @@ class GameSession {
         }.asFlux()
             .mergeWith(sink(player)).takeUntil(GameMessage::isLast)
             .doOnCancel { logger.info("server flux cancelled") }
-            .doOnComplete { logger.info("server flux completed") }
-            .doOnError { logger.error("server flux error: ${it.message}") }
 
     private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
         phase == GameSessionPhase.PLAYING &&
