@@ -23,11 +23,11 @@ public class GameSocketHandler implements WebSocketHandler {
 
         var gameSession = GameSession.getSession();
 
-        var player = gameSession.isGameOpen() ? PLAYER_A : PLAYER_B;
+        var player = gameSession.isLobbyOpen() ? PLAYER_A : PLAYER_B;
 
         Flux<GameMessage> playerFlux =
             session.receive()
-                .doOnComplete( () -> logger.info("terminated"))
+                .doOnComplete(() -> logger.info("terminated"))
                 .map(WebSocketMessage::getPayloadAsText)
                 .map(GameMessage::of)
                 .concatMap(it -> gameSession.handleMessage(player, it));

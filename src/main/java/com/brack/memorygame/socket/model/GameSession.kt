@@ -28,18 +28,14 @@ class GameSession {
     private val gameBoard = GameBoard()
     private val sinkA: Sinks.Many<GameMessage> = Sinks.many().unicast().onBackpressureBuffer()
     private val sinkB: Sinks.Many<GameMessage> = Sinks.many().unicast().onBackpressureBuffer()
-    private var state: GameSessionState = GameSessionState.OPEN
+    private var phase: GameSessionPhase = GameSessionPhase.LOBBY
 
-    init {
-        with(sinkA) {
-            tryEmitNext(WAITING_MESSAGE)
-        }
-    }
+    init { sinkA.tryEmitNext(WAITING_MESSAGE) }
 
-    fun isGameOpen() = state == GameSessionState.OPEN
+    fun isLobbyOpen() = phase == GameSessionPhase.LOBBY
 
     fun startGame() {
-        state = GameSessionState.PLAYING
+        phase = GameSessionPhase.PLAYING
         sinkA.tryEmitNext(YOUR_TURN_MESSAGE)
         sinkB.tryEmitNext(OPPONENT_TURN_MESSAGE)
     }
@@ -64,7 +60,7 @@ class GameSession {
                         flowOf(figureMessage, showMessage, OPPONENT_TURN_MESSAGE)
                     }
                     player -> {
-                        state = GameSessionState.CLOSED
+                        phase = GameSessionPhase.CLOSED
                         with(getOpponentSink(player)){
                             tryEmitNext(figureMessage)
                             tryEmitNext(showMessage)
@@ -73,7 +69,7 @@ class GameSession {
                         flowOf(figureMessage, showMessage, WIN_MESSAGE)
                     }
                     null -> {
-                        state = GameSessionState.CLOSED
+                        phase = GameSessionPhase.CLOSED
                         with(getOpponentSink(player)){
                             tryEmitNext(figureMessage)
                             tryEmitNext(showMessage)
@@ -87,7 +83,7 @@ class GameSession {
         } else Flux.empty()
 
     private fun boardUpdate(player: CellOwner, gameMessage: GameMessage) =
-        state == GameSessionState.PLAYING &&
+        phase == GameSessionPhase.PLAYING &&
         turn == player &&
         gameMessage.type == MessageType.CLIENT_CLICK &&
         gameBoard.updateCell(gameMessage.text.toInt(), player)
@@ -95,8 +91,8 @@ class GameSession {
     private fun getOpponentSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkB else sinkA
 
-    enum class GameSessionState {
-        OPEN,
+    enum class GameSessionPhase {
+        LOBBY,
         PLAYING,
         CLOSED
     }
@@ -109,7 +105,7 @@ class GameSession {
                 while (true) {
                     delay(1000)
                     gameSessions.removeAll {
-                        it.state == GameSessionState.CLOSED
+                        it.phase == GameSessionPhase.CLOSED
                     }
                     logger.info("Active games: ${gameSessions.size}")
                 }
@@ -118,7 +114,7 @@ class GameSession {
 
         @JvmStatic
         fun getSession() = gameSessions
-            .firstOrNull(GameSession::isGameOpen)
+            .firstOrNull(GameSession::isLobbyOpen)
             ?.let {
                 it.startGame()
                 it
