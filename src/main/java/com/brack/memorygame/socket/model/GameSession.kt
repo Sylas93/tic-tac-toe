@@ -66,7 +66,15 @@ class GameSession {
             }
         }.asFlux()
             .mergeWith(sink(player))
-            .doOnCancel { logger.info("server flux cancelled") }
+            .doOnCancel {
+                if (phase == GameSessionPhase.CLOSED) {
+                    logger.info("server flux cancelled")
+                } else {
+                    logger.warn("Player let game before end")
+                    phase = GameSessionPhase.CLOSED
+                    opponentSink(player).emit(WIN_MESSAGE)
+                }
+            }
             .takeUntil(GameMessage::isLast)
 
     private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
