@@ -42,9 +42,8 @@ class GameSession {
         }.asFlux()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun serverFeedback(playerInput: Flux<Pair<CellOwner, GameMessage>>) : Flux<GameMessage> =
-        playerInput.asFlow().flatMapConcat {
-            val (player, gameMessage) = it
+    fun serverFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
+        playerInput.asFlow().flatMapConcat { gameMessage ->
             if (updateBoard(player, gameMessage)) {
                 val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
                 val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)

@@ -31,7 +31,7 @@ public class GameSocketHandler implements WebSocketHandler {
                 .map(GameMessage::of);
 
         Flux<GameMessage> playerFeedback =
-            gameSession.serverFeedback(playerInput.map(it -> new Pair<>(player, it)));
+            gameSession.serverFeedback(player, playerInput);
 
         Flux<GameMessage> serverInput = gameSession.serverInput(player)
             .doOnCancel(() -> logger.info("server flux cancelled"))
