@@ -1,5 +1,6 @@
 package com.brack.memorygame.socket.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,6 +13,7 @@ data class GameMessage(
     val type: MessageType
 ) {
     fun write() : String = mapper.writeValueAsString(this)
+    @JsonIgnore
     fun isLast() : Boolean = this == WIN_MESSAGE || this == LOST_MESSAGE || this == TIE_MESSAGE
 
     companion object {
