@@ -11,6 +11,7 @@ import com.brack.memorygame.socket.model.GameMessage.Companion.WIN_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.X_FIGURE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.YOUR_TURN_MESSAGE
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.reactive.asFlow
@@ -18,7 +19,6 @@ import kotlinx.coroutines.reactor.asFlux
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 
 private val logger: Logger = LoggerFactory.getLogger(GameSession::class.java)
@@ -34,22 +34,21 @@ class GameSession {
 
     fun isLobbyOpen() = phase == GameSessionPhase.LOBBY
 
-    fun startGame() {
-        phase = GameSessionPhase.PLAYING
-        sinkA.tryEmitNext(YOUR_TURN_MESSAGE)
-        sinkB.tryEmitNext(OPPONENT_TURN_MESSAGE)
-    }
-
-    fun getSink(player: CellOwner) =
-        if (player == CellOwner.PLAYER_A) sinkA else sinkB
+    fun serverInput(player: CellOwner): Flux<GameMessage> =
+        if (player == CellOwner.PLAYER_A) {
+            sinkA
+        } else {
+            sinkB
+        }.asFlux()
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun handleMessage(player: CellOwner, gameMessage: GameMessage) : Flux<GameMessage> =
-        if (boardUpdate(player, gameMessage)) {
-            val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
-            val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
-            Mono.just(gameBoard).asFlow().flatMapConcat {
-                when(it.checkWinner()) {
+    fun serverFeedback(playerInput: Flux<Pair<CellOwner, GameMessage>>) : Flux<GameMessage> =
+        playerInput.asFlow().flatMapConcat {
+            val (player, gameMessage) = it
+            if (updateBoard(player, gameMessage)) {
+                val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
+                val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
+                when(gameBoard.checkWinner()) {
                     CellOwner.NONE -> {
                         with(getOpponentSink(player)){
                             tryEmitNext(figureMessage)
@@ -79,10 +78,12 @@ class GameSession {
                     }
                     else -> throw IllegalStateException("Player cannot make opponent win")
                 }
-            }.asFlux()
-        } else Flux.empty()
+            } else {
+               emptyFlow()
+            }
+        }.asFlux()
 
-    private fun boardUpdate(player: CellOwner, gameMessage: GameMessage) =
+    private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
         phase == GameSessionPhase.PLAYING &&
         turn == player &&
         gameMessage.type == MessageType.CLIENT_CLICK &&
@@ -90,6 +91,12 @@ class GameSession {
 
     private fun getOpponentSink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) sinkB else sinkA
+
+    private fun startGame() {
+        phase = GameSessionPhase.PLAYING
+        sinkA.tryEmitNext(YOUR_TURN_MESSAGE)
+        sinkB.tryEmitNext(OPPONENT_TURN_MESSAGE)
+    }
 
     enum class GameSessionPhase {
         LOBBY,

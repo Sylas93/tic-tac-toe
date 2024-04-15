@@ -1,6 +1,7 @@
 package com.brack.memorygame.gameplay
 
 import com.brack.memorygame.gameplay.CellOwner.*
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
@@ -14,7 +15,7 @@ class GameBoardTest {
     @DisplayName("Should return no winner when gameSession is new")
     fun checkWinnerForNewSession() {
         val gameBoard = GameBoard()
-        assertEquals(NONE, gameBoard.checkWinner())
+        assertEquals(NONE, gameBoard.checkWinnerBlocking())
     }
 
     @Test
@@ -27,7 +28,7 @@ class GameBoardTest {
                 PLAYER_A, NONE, PLAYER_B
             )
         )
-        assertEquals(NONE, gameBoard.checkWinner())
+        assertEquals(NONE, gameBoard.checkWinnerBlocking())
     }
 
     @Test
@@ -40,7 +41,7 @@ class GameBoardTest {
                 PLAYER_A, PLAYER_B, PLAYER_B
             )
         )
-        assertNull(gameBoard.checkWinner())
+        assertNull(gameBoard.checkWinnerBlocking())
     }
 
     @Test
@@ -53,7 +54,7 @@ class GameBoardTest {
                 PLAYER_A, PLAYER_B, PLAYER_B
             )
         )
-        assertThrows(IllegalStateException::class.java) { gameBoard.checkWinner() }
+        assertThrows(IllegalStateException::class.java) { gameBoard.checkWinnerBlocking() }
     }
 
     @Test
@@ -66,7 +67,7 @@ class GameBoardTest {
                 PLAYER_A, PLAYER_B, PLAYER_B
             )
         )
-        assertThrows(IllegalStateException::class.java) { gameBoard.checkWinner() }
+        assertThrows(IllegalStateException::class.java) { gameBoard.checkWinnerBlocking() }
     }
 
     @Test
@@ -79,7 +80,7 @@ class GameBoardTest {
                 PLAYER_A, NONE, PLAYER_B
             )
         )
-        assertEquals(PLAYER_A, gameBoard1.checkWinner())
+        assertEquals(PLAYER_A, gameBoard1.checkWinnerBlocking())
 
         val gameBoard2 =GameBoard().given(
             mutableListOf(
@@ -88,7 +89,7 @@ class GameBoardTest {
                 PLAYER_A, PLAYER_B, PLAYER_A
             )
         )
-        assertEquals(PLAYER_B, gameBoard2.checkWinner())
+        assertEquals(PLAYER_B, gameBoard2.checkWinnerBlocking())
     }
 
     @Test
@@ -101,7 +102,7 @@ class GameBoardTest {
                 PLAYER_A, NONE, PLAYER_B
             )
         )
-        assertEquals(PLAYER_A, gameBoard1.checkWinner())
+        assertEquals(PLAYER_A, gameBoard1.checkWinnerBlocking())
 
         val gameBoard2 = GameBoard().given(
             mutableListOf(
@@ -110,7 +111,7 @@ class GameBoardTest {
                 PLAYER_A, NONE, PLAYER_B
             )
         )
-        assertEquals(PLAYER_B, gameBoard2.checkWinner())
+        assertEquals(PLAYER_B, gameBoard2.checkWinnerBlocking())
     }
 
     @Test
@@ -123,7 +124,7 @@ class GameBoardTest {
                 PLAYER_B, NONE, PLAYER_A
             )
         )
-        assertEquals(PLAYER_A, gameBoard1.checkWinner())
+        assertEquals(PLAYER_A, gameBoard1.checkWinnerBlocking())
     }
 
     @Test
@@ -136,9 +137,11 @@ class GameBoardTest {
                 PLAYER_B, NONE, PLAYER_A
             )
         )
-        assertEquals(PLAYER_B, gameBoard1.checkWinner())
+        assertEquals(PLAYER_B, gameBoard1.checkWinnerBlocking())
     }
 }
+
+private fun GameBoard.checkWinnerBlocking() = runBlocking { checkWinner() }
 
 private fun GameBoard.given(board: MutableList<CellOwner>) = also {
     val boardField = GameBoard::class.memberProperties.first { it.name == "cells" }
