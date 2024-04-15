@@ -1,6 +1,7 @@
 const { webSocket } = rxjs.webSocket;
 var socketConnection = webSocket('ws://localhost:8080/socket');
 var figure = "";
+var gameLoaded = false;
 
 $(document).ready(function () {
     console.log('ready');
@@ -16,9 +17,11 @@ $(document).ready(function () {
 });
 
 function initialize() {
+    if (gameLoaded) return;
+    gameLoaded = true;
     console.log("Hello")
     $(".container").append(`
-        <div class="row mb-3"></div>
+        <div class="row mb-3" style="padding-right: 15px; padding-left: 15px;"></div>
     `)
     for (let i = 0; i < 9; i++) {
         $(".row").append(`
@@ -50,5 +53,8 @@ function handleNext(msg) {
         figure = msg.text;
     } else if (msg.type === "SHOW") {
         $(`#${msg.text} .img-responsive`).attr("src",`images/${figure}.jpg`);
+    } else if (msg.type === "INFO") {
+        console.log("Got an info!")
+        $("h2").text(msg.text);
     }
 }
