@@ -1,5 +1,5 @@
 const { webSocket } = rxjs.webSocket;
-var socketConnection = webSocket('ws://localhost:8080/socket');
+var socketConnection = webSocket('SOCKET_HOST');
 var figure = "";
 var gameState = "NO_GAME";
 var errorFlag = false;
