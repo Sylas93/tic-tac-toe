@@ -53,7 +53,7 @@ function handleError(err) {
     gameState = "END_GAME"
     setTimeout(() => {
         if (errorFlag) {
-            $("h2").html("Ops, something went wrong!<br><br>Tap here to play again!");
+            $("h2").html("Tap here to play again!");
         }
     }, 20000);
 }
