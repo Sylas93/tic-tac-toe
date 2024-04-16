@@ -10,10 +10,10 @@ class GameBoard {
     private val cells: MutableList<CellOwner> = MutableList(9) { CellOwner.NONE }
 
     /**
-     * @param index the cell tp update
-     * @param owner the player making the play
+     * @param index the cell to update
+     * @param owner the [player][CellOwner] making the play
      *
-     * @return success update if the previous owner was [CellOwner.NONE], false otherwise
+     * @return true for success update when the cell has [no previous owner][CellOwner.NONE], false otherwise
      */
     fun updateCell(index: Int, owner: CellOwner) =
         cells[index].takeIf { it == CellOwner.NONE }?.let {
