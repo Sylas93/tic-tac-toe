@@ -26,7 +26,7 @@ class GameBoard {
      * * [CellOwner.NONE] if there is no winner yet
      * * [CellOwner.PLAYER_A] if player A won
      * * [CellOwner.PLAYER_B] if player B won
-     * * `null` after game end
+     * * `null` after game end with a tie
      */
     suspend fun checkWinner(): CellOwner? =
         withContext(Dispatchers.Default) {
