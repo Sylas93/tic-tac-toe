@@ -1,7 +1,8 @@
-package com.brack.tictactoe.socket.model
+package com.brack.tictactoe.socket
 
 import com.brack.tictactoe.gameplay.CellOwner
 import com.brack.tictactoe.gameplay.GameBoard
+import com.brack.tictactoe.socket.model.GameMessage
 import com.brack.tictactoe.socket.model.GameMessage.Companion.LOST_MESSAGE
 import com.brack.tictactoe.socket.model.GameMessage.Companion.OPPONENT_TURN_MESSAGE
 import com.brack.tictactoe.socket.model.GameMessage.Companion.O_FIGURE_MESSAGE
@@ -11,6 +12,7 @@ import com.brack.tictactoe.socket.model.GameMessage.Companion.WIN_MESSAGE
 import com.brack.tictactoe.socket.model.GameMessage.Companion.WITHDRAWAL_MESSAGE
 import com.brack.tictactoe.socket.model.GameMessage.Companion.X_FIGURE_MESSAGE
 import com.brack.tictactoe.socket.model.GameMessage.Companion.YOUR_TURN_MESSAGE
+import com.brack.tictactoe.socket.model.MessageType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapConcat
