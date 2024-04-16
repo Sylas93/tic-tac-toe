@@ -133,4 +133,6 @@ class GameSession {
 }
 
 fun Sinks.Many<GameMessage>.emit(vararg message: GameMessage) =
-    message.map { tryEmitNext(it) }.all { it == Sinks.EmitResult.OK }
+    message.map { tryEmitNext(it) }
+        .filterNot { it == Sinks.EmitResult.OK }
+        .forEach { logger.error("Error emitting from sink: $it") }
