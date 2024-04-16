@@ -31,11 +31,12 @@ class WebConfig implements WebFluxConfigurer {
     private static final MediaType APPLICATION_JS = new MediaType("application", "javascript");
     private static final String SOCKET_PLACEHOLDER_JS = "SOCKET_HOST";
     private static final CacheControl CACHE_CONTROL = CacheControl.maxAge(5, TimeUnit.MINUTES);
+    private static final String SOCKET_ENDPOINT = "/socket";
 
     @Bean
     public HandlerMapping handlerMapping() {
         Map<String, WebSocketHandler> map = new HashMap<>();
-        map.put("/socket", new GameSocketHandler());
+        map.put(SOCKET_ENDPOINT, new GameSocketHandler());
         int order = -1; // before annotated controllers
 
         return new SimpleUrlHandlerMapping(map, order);
@@ -52,11 +53,12 @@ class WebConfig implements WebFluxConfigurer {
     @Bean
     public RouterFunction<ServerResponse> indexRouter(
         @Value("classpath:/static/app.js") final Resource appJS,
-        @Value("${socket.host}") final String socketHost
+        @Value("${socket.host}") final String socketHost,
+        @Value("${server.port}") final String port
     ) throws IOException {
         var contextAwareAppJS = appJS
             .getContentAsString(Charset.defaultCharset())
-            .replace(SOCKET_PLACEHOLDER_JS, socketHost);
+            .replace(SOCKET_PLACEHOLDER_JS, String.format("%s:%s%s", socketHost, port, SOCKET_ENDPOINT));
 
         return route(
             GET("/app.js"),
