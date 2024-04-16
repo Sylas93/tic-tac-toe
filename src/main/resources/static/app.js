@@ -3,6 +3,7 @@ var socketConnection = webSocket('ws://localhost:8080/socket');
 var figure = "";
 var gameState = "NO_GAME";
 var errorFlag = false;
+var standardBackgroundColor = "#aa88b9";
 
 function initialize() {
     if (gameState === "IN_GAME") return;
@@ -12,6 +13,7 @@ function initialize() {
     } else if (gameState === "END_GAME") {
         resetCells();
     }
+    $("h2").css("background", standardBackgroundColor);
     gameState = "IN_GAME";
     errorFlag = false;
     connectSocket();
@@ -53,6 +55,7 @@ function handleError(err) {
     gameState = "END_GAME"
     setTimeout(() => {
         if (errorFlag) {
+            $("h2").css("background", "darkseagreen");
             $("h2").html("Tap here to play again!");
         }
     }, 20000);
