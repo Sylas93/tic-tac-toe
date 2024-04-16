@@ -5,7 +5,7 @@ enum class CellOwner {
     PLAYER_A,
     PLAYER_B;
 
-    fun opponent() = when(this) {
+    fun opponent() = when (this) {
         PLAYER_A -> PLAYER_B
         PLAYER_B -> PLAYER_A
         else -> NONE

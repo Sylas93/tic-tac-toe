@@ -2,9 +2,9 @@ package com.brack.memorygame.gameplay
 
 import com.brack.memorygame.gameplay.CellOwner.*
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.springframework.util.ReflectionUtils
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
@@ -82,7 +82,7 @@ class GameBoardTest {
         )
         assertEquals(PLAYER_A, gameBoard1.checkWinnerBlocking())
 
-        val gameBoard2 =GameBoard().given(
+        val gameBoard2 = GameBoard().given(
             mutableListOf(
                 PLAYER_A, PLAYER_B, PLAYER_A,
                 PLAYER_B, PLAYER_B, NONE,

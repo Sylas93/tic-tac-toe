@@ -12,16 +12,18 @@ data class GameMessage(
     val text: String,
     val type: MessageType
 ) {
-    fun write() : String = mapper.writeValueAsString(this)
+    fun write(): String = mapper.writeValueAsString(this)
+
     @JsonIgnore
-    fun isLast() : Boolean =
+    fun isLast(): Boolean =
         this == WIN_MESSAGE ||
-        this == LOST_MESSAGE ||
-        this == TIE_MESSAGE ||
-        this == WITHDRAWAL_MESSAGE
+            this == LOST_MESSAGE ||
+            this == TIE_MESSAGE ||
+            this == WITHDRAWAL_MESSAGE
 
     companion object {
         private const val PLAY_AGAIN_TEXT = "<br><br>Tap here to play again!"
+
         @JvmStatic
         fun of(msg: String): GameMessage =
             try {
@@ -30,6 +32,7 @@ data class GameMessage(
                 logger.error("Error parsing client message")
                 GameMessage("Unexpected input", MessageType.ERROR)
             }
+
         val YOUR_TURN_MESSAGE = GameMessage("Your turn!", MessageType.INFO)
         val OPPONENT_TURN_MESSAGE = GameMessage("Opponent turn!", MessageType.INFO)
         val WAITING_MESSAGE = GameMessage("Waiting for opponent", MessageType.INFO)

@@ -1,6 +1,9 @@
 package com.brack.memorygame.gameplay
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import kotlin.math.absoluteValue
 
 class GameBoard {
@@ -25,7 +28,7 @@ class GameBoard {
      * * [CellOwner.PLAYER_B] if player B won
      * * `null` after game end
      */
-    suspend fun checkWinner() : CellOwner? =
+    suspend fun checkWinner(): CellOwner? =
         withContext(Dispatchers.Default) {
             checkBoardHealth()
             listOf(
@@ -43,13 +46,13 @@ class GameBoard {
                 }
             ).awaitAll()
         }
-        .filterNotNull()
-        .distinct().also { check(it.size <= 1) { "Session corrupted: multiple winners" } }
-        .firstOrNull() ?: cells.firstOrNull { it == CellOwner.NONE }
+            .filterNotNull()
+            .distinct().also { check(it.size <= 1) { "Session corrupted: multiple winners" } }
+            .firstOrNull() ?: cells.firstOrNull { it == CellOwner.NONE }
 
     private fun checkBoardHealth() {
         val movesCountDiff = cells.count { it == CellOwner.PLAYER_A } -
-                cells.count { it == CellOwner.PLAYER_B }
+            cells.count { it == CellOwner.PLAYER_B }
         check(movesCountDiff.absoluteValue < 2) { "Session corrupted: to many moves from one player" }
     }
 
@@ -59,7 +62,7 @@ class GameBoard {
             .filter { it.value.size == 3 }
             .keys.firstOrNull()
 
-    private fun lineCheck(transform: Int.(Int)->Int) =
+    private fun lineCheck(transform: Int.(Int) -> Int) =
         cells.mapIndexed { index, cellOwner ->
             IndexedValue(index.transform(3), cellOwner)
         }

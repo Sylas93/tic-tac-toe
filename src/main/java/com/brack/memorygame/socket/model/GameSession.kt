@@ -2,13 +2,13 @@ package com.brack.memorygame.socket.model
 
 import com.brack.memorygame.gameplay.CellOwner
 import com.brack.memorygame.gameplay.GameBoard
-import com.brack.memorygame.socket.model.GameMessage.Companion.WITHDRAWAL_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.LOST_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.OPPONENT_TURN_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.O_FIGURE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.TIE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.WAITING_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.WIN_MESSAGE
+import com.brack.memorygame.socket.model.GameMessage.Companion.WITHDRAWAL_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.X_FIGURE_MESSAGE
 import com.brack.memorygame.socket.model.GameMessage.Companion.YOUR_TURN_MESSAGE
 import kotlinx.coroutines.*
@@ -31,7 +31,9 @@ class GameSession {
     private val sinkB: Sinks.Many<GameMessage> = Sinks.many().unicast().onBackpressureBuffer()
     private var phase: GameSessionPhase = GameSessionPhase.LOBBY
 
-    init { sinkA.tryEmitNext(WAITING_MESSAGE) }
+    init {
+        sinkA.tryEmitNext(WAITING_MESSAGE)
+    }
 
     companion object Manager {
         private val gameSessions = mutableListOf<GameSession>()
@@ -49,7 +51,7 @@ class GameSession {
         }
 
         @JvmStatic
-        fun feedback(playerInput: Flux<GameMessage>) : Flux<GameMessage> {
+        fun feedback(playerInput: Flux<GameMessage>): Flux<GameMessage> {
             return gameSessions.firstOrNull { it.phase == GameSessionPhase.LOBBY }
                 ?.also { it.startGame() }
                 ?.playerFeedback(CellOwner.PLAYER_B, playerInput)
@@ -60,34 +62,37 @@ class GameSession {
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun playerFeedback(player: CellOwner, playerInput: Flux<GameMessage>) : Flux<GameMessage> =
+    private fun playerFeedback(player: CellOwner, playerInput: Flux<GameMessage>): Flux<GameMessage> =
         playerInput.asFlow().flatMapConcat { gameMessage ->
             if (updateBoard(player, gameMessage)) {
                 val figureMessage = if (player == CellOwner.PLAYER_A) X_FIGURE_MESSAGE else O_FIGURE_MESSAGE
                 val showMessage = GameMessage(gameMessage.text, MessageType.SHOW)
-                when(gameBoard.checkWinner()) {
+                when (gameBoard.checkWinner()) {
                     CellOwner.NONE -> {
                         turn = turn.opponent()
                         arrayOf(figureMessage, showMessage)
                             .also { opponentSink(player).emit(*it, YOUR_TURN_MESSAGE) }
                             .let { flowOf(*it, OPPONENT_TURN_MESSAGE) }
                     }
+
                     player -> {
                         phase = GameSessionPhase.CLOSED
                         arrayOf(figureMessage, showMessage)
                             .also { opponentSink(player).emit(*it, LOST_MESSAGE) }
                             .let { flowOf(*it, WIN_MESSAGE) }
                     }
+
                     null -> {
                         phase = GameSessionPhase.CLOSED
                         arrayOf(figureMessage, showMessage, TIE_MESSAGE)
                             .also { opponentSink(player).emit(*it) }
                             .let { flowOf(*it) }
                     }
+
                     else -> throw IllegalStateException("Player cannot make opponent win")
                 }
             } else {
-               emptyFlow()
+                emptyFlow()
             }
         }.asFlux()
             .mergeWith(sink(player).asFlux())
@@ -105,9 +110,9 @@ class GameSession {
 
     private fun updateBoard(player: CellOwner, gameMessage: GameMessage) =
         phase == GameSessionPhase.PLAYING &&
-        turn == player &&
-        gameMessage.type == MessageType.CLIENT_CLICK &&
-        gameBoard.updateCell(gameMessage.text.toInt(), player)
+            turn == player &&
+            gameMessage.type == MessageType.CLIENT_CLICK &&
+            gameBoard.updateCell(gameMessage.text.toInt(), player)
 
     private fun sink(player: CellOwner) =
         if (player == CellOwner.PLAYER_A) {
