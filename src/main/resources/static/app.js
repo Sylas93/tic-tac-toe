@@ -33,7 +33,7 @@ function clickImageHandler(clicked_id) {
 }
 
 function createMessage(text, type) {
-    return {"text": text, "type": type};
+    return { "text": text, "type": type };
 }
 
 function handleNext(msg) {
@@ -41,7 +41,7 @@ function handleNext(msg) {
     if (msg.type === "FIGURE") {
         figure = msg.text;
     } else if (msg.type === "SHOW") {
-        $(`#${msg.text} .img-responsive`).attr("src",`images/${figure}.jpg`);
+        $(`#${msg.text} .img-responsive`).attr("src", `images/${figure}.jpg`);
     } else if (msg.type === "INFO") {
         console.log("Got an info!")
         $("h2").html(msg.text);
@@ -81,6 +81,6 @@ function initializeCells() {
 
 function resetCells() {
     for (let i = 0; i < 9; i++) {
-        $(`#${i} .img-responsive`).attr("src",`images/empty-cell.jpg`);
+        $(`#${i} .img-responsive`).attr("src", `images/empty-cell.jpg`);
     }
 }
