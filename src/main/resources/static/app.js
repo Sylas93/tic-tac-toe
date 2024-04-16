@@ -33,7 +33,7 @@ function clickImageHandler(clicked_id) {
 }
 
 function createMessage(text, type) {
-    return {"text": text, "type": type};
+    return { "text": text, "type": type };
 }
 
 function handleNext(msg) {
@@ -41,7 +41,7 @@ function handleNext(msg) {
     if (msg.type === "FIGURE") {
         figure = msg.text;
     } else if (msg.type === "SHOW") {
-        $(`#${msg.text} .img-responsive`).attr("src",`images/${figure}.jpg`);
+        $(`#${msg.text} .img-responsive`).attr("src", `images/${figure}.jpg`);
     } else if (msg.type === "INFO") {
         console.log("Got an info!")
         $("h2").html(msg.text);
@@ -51,11 +51,10 @@ function handleNext(msg) {
 function handleError(err) {
     console.log(err);
     if (errorFlag) return;
-    errorFlag = true
-    gameState = "END_GAME"
+    errorFlag = true;
+    delayedEndGame();
     setTimeout(() => {
         if (errorFlag) {
-            $("h2").css("background", "darkseagreen");
             $("h2").html("Tap here to play again!");
         }
     }, 20000);
@@ -63,7 +62,14 @@ function handleError(err) {
 
 function handleComplete() {
     console.log('complete');
-    gameState = "END_GAME"
+    delayedEndGame();
+}
+
+function delayedEndGame() {
+    setTimeout(() => {
+        $("h2").css("background", "darkseagreen");
+        gameState = "END_GAME"
+    }, 2000);
 }
 
 function initializeCells() {
@@ -81,6 +87,6 @@ function initializeCells() {
 
 function resetCells() {
     for (let i = 0; i < 9; i++) {
-        $(`#${i} .img-responsive`).attr("src",`images/empty-cell.jpg`);
+        $(`#${i} .img-responsive`).attr("src", `images/empty-cell.jpg`);
     }
 }
