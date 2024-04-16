@@ -3,17 +3,18 @@ package com.brack.memorygame.socket.config;
 import com.brack.memorygame.socket.GameSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.web.reactive.HandlerMapping;
+import org.springframework.web.reactive.config.ResourceHandlerRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.reactive.socket.WebSocketHandler;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.springframework.web.reactive.function.server.RouterFunctions.route;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
-class WebConfig {
+class WebConfig implements WebFluxConfigurer {
 
     @Bean
     public HandlerMapping handlerMapping() {
@@ -22,5 +23,13 @@ class WebConfig {
         int order = -1; // before annotated controllers
 
         return new SimpleUrlHandlerMapping(map, order);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry
+            .addResourceHandler("/**")
+            .addResourceLocations("classpath:/static/")
+            .setCacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES));
     }
 }
