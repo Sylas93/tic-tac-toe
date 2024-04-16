@@ -1,7 +1,6 @@
 package com.brack.tictactoe.socket;
 
 import com.brack.tictactoe.socket.model.GameMessage;
-import com.brack.tictactoe.socket.model.GameSession;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
