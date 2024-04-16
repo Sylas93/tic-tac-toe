@@ -51,11 +51,10 @@ function handleNext(msg) {
 function handleError(err) {
     console.log(err);
     if (errorFlag) return;
-    errorFlag = true
-    gameState = "END_GAME"
+    errorFlag = true;
+    delayedEndGame();
     setTimeout(() => {
         if (errorFlag) {
-            $("h2").css("background", "darkseagreen");
             $("h2").html("Tap here to play again!");
         }
     }, 20000);
@@ -63,7 +62,14 @@ function handleError(err) {
 
 function handleComplete() {
     console.log('complete');
-    gameState = "END_GAME"
+    delayedEndGame();
+}
+
+function delayedEndGame() {
+    setTimeout(() => {
+        $("h2").css("background", "darkseagreen");
+        gameState = "END_GAME"
+    }, 2000);
 }
 
 function initializeCells() {
