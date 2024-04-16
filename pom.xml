@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.brack</groupId>
-    <artifactId>memory-game</artifactId>
+    <artifactId>tic-tac-toe</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>memory-game</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Demo project for reactive websocket</description>
     <properties>
         <java.version>21</java.version>
         <kotlin.version>1.9.23</kotlin.version>

@@ -1,13 +1,13 @@
-package com.brack.memorygame;
+package com.brack.tictactoe;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MemoryGameApplication {
+public class TicTacToeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MemoryGameApplication.class, args);
+        SpringApplication.run(TicTacToeApplication.class, args);
     }
 
 }

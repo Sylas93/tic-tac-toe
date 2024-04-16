@@ -1,4 +1,4 @@
-package com.brack.memorygame.socket.model
+package com.brack.tictactoe.socket.model
 
 enum class MessageType {
     CLIENT_CLICK,

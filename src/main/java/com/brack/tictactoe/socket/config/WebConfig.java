@@ -1,6 +1,6 @@
-package com.brack.memorygame.socket.config;
+package com.brack.tictactoe.socket.config;
 
-import com.brack.memorygame.socket.GameSocketHandler;
+import com.brack.tictactoe.socket.GameSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;

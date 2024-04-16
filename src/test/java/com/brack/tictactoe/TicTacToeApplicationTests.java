@@ -1,10 +1,10 @@
-package com.brack.memorygame;
+package com.brack.tictactoe;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MemoryGameApplicationTests {
+class TicTacToeApplicationTests {
 
     @Test
     void contextLoads() {

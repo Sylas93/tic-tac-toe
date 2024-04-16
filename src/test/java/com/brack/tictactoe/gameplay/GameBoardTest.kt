@@ -1,6 +1,6 @@
-package com.brack.memorygame.gameplay
+package com.brack.tictactoe.gameplay
 
-import com.brack.memorygame.gameplay.CellOwner.*
+import com.brack.tictactoe.gameplay.CellOwner.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName

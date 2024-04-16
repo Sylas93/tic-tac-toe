@@ -1,4 +1,4 @@
-package com.brack.memorygame.gameplay
+package com.brack.tictactoe.gameplay
 
 enum class CellOwner {
     NONE,

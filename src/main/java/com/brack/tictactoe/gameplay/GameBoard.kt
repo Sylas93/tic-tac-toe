@@ -1,4 +1,4 @@
-package com.brack.memorygame.gameplay
+package com.brack.tictactoe.gameplay
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async

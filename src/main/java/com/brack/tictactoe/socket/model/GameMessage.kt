@@ -1,4 +1,4 @@
-package com.brack.memorygame.socket.model
+package com.brack.tictactoe.socket.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
