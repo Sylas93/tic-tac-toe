@@ -2,8 +2,8 @@ const { webSocket } = rxjs.webSocket;
 var socketConnection = webSocket('SOCKET_HOST');
 var figure = "";
 var gameState = "NO_GAME";
-var errorFlag = false;
 var standardBackgroundColor = "#aa88b9";
+var endFlag = false;
 
 function initialize() {
     if (gameState === "IN_GAME") return;
@@ -15,7 +15,7 @@ function initialize() {
     }
     $("h2").css("background", standardBackgroundColor);
     gameState = "IN_GAME";
-    errorFlag = false;
+    endFlag = false;
     connectSocket();
 }
 
@@ -45,31 +45,31 @@ function handleNext(msg) {
     } else if (msg.type === "INFO") {
         console.log("Got an info!")
         $("h2").html(msg.text);
+    } else if (msg.type === "END") {
+        console.log("Game end!")
+        endFlag = true;
+        $("h2").html(msg.text);
+        $("h2").css("background", "darkseagreen");
+        delayedEndGame();
     }
 }
 
 function handleError(err) {
     console.log(err);
-    if (errorFlag) return;
-    errorFlag = true;
+    if (endFlag) return;
+    $("h2").html("Ops, connection lost :(<br>Tap here to play again!");
+    $("h2").css("background", "indianred");
     delayedEndGame();
-    setTimeout(() => {
-        if (errorFlag) {
-            $("h2").html("Tap here to play again!");
-        }
-    }, 20000);
 }
 
 function handleComplete() {
     console.log('complete');
-    delayedEndGame();
 }
 
 function delayedEndGame() {
     setTimeout(() => {
-        $("h2").css("background", "darkseagreen");
         gameState = "END_GAME"
-    }, 2000);
+    }, 1400);
 }
 
 function initializeCells() {
