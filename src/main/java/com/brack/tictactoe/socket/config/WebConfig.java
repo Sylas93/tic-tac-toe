@@ -53,12 +53,11 @@ class WebConfig implements WebFluxConfigurer {
     @Bean
     public RouterFunction<ServerResponse> indexRouter(
         @Value("classpath:/static/app.js") final Resource appJS,
-        @Value("${socket.host}") final String socketHost,
-        @Value("${server.port}") final String port
+        @Value("${socket.host}") final String socketHost
     ) throws IOException {
         var contextAwareAppJS = appJS
             .getContentAsString(Charset.defaultCharset())
-            .replace(SOCKET_PLACEHOLDER_JS, String.format("%s:%s%s", socketHost, port, SOCKET_ENDPOINT));
+            .replace(SOCKET_PLACEHOLDER_JS, socketHost + SOCKET_ENDPOINT);
 
         return route(
             GET("/app.js"),
