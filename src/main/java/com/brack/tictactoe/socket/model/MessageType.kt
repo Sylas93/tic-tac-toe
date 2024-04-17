@@ -5,5 +5,6 @@ enum class MessageType {
     SHOW,
     INFO,
     ERROR,
-    FIGURE
+    FIGURE,
+    END
 }
