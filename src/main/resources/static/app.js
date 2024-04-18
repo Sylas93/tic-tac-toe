@@ -57,7 +57,7 @@ function handleNext(msg) {
 function handleError(err) {
     console.log(err);
     if (endFlag) return;
-    $("h2").html("Ops, connection lost :(<br>Tap here to play again!");
+    $("h2").html("Ops, connection lost<br>:(<br>Tap here to play again!");
     $("h2").css("background", "indianred");
     delayedEndGame();
 }
