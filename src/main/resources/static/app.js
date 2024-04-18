@@ -1,5 +1,5 @@
 const { webSocket } = rxjs.webSocket;
-var socketConnection = webSocket('SOCKET_HOST');
+var socketConnection;
 var figure = "";
 var gameState = "NO_GAME";
 var standardBackgroundColor = "#aa88b9";
@@ -20,6 +20,7 @@ function initialize() {
 }
 
 function connectSocket() {
+    socketConnection = webSocket('SOCKET_HOST');
     socketConnection.subscribe({
         next: msg => handleNext(msg), // Called whenever there is a message from the server.
         error: err => handleError(err), // Called if at any point WebSocket API signals some kind of error.
